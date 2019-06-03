@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# coding: utf-8
 '''插件工具：环境变量。'''
 
 import os

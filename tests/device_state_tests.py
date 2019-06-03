@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# coding: utf-8
 '''插件工具测试：bot状态'''
 
 from __future__ import print_function

@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# coding: utf-8
 '插件工具导入。'
 
 import os

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# coding: utf-8
 '''插件工具：辅助实用程序。'''
 
 from __future__ import print_function
