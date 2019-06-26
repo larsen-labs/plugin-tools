@@ -5,6 +5,7 @@
 import os
 from .device import log, get_bot_state
 from .app import request
+from .auxiliary import snake_case
 
 with open(os.path.join(os.path.dirname(__file__), 'VERSION')) as version_file:
     VERSION = version_file.read().strip()
@@ -19,9 +20,7 @@ def get_config_value(plugin_name, config_name, value_type=int,
         plugin_name (str): 插件的名称。
         config_name (str): 插件输入名称。
     """
-    # 将插件名称转换为带“_”的形式
-    plugin = plugin_name.replace(' ', '_').replace('-', '_').lower()
-    namespaced_config = '{}_{}'.format(plugin, config_name)
+    namespaced_config = '{}_{}'.format(snake_case(plugin_name), config_name)
 
     # 尝试分两步确定配置的默认值。
     # 如果在任何一步中都找不到默认值，则假定已设置配置值（如果未设置，则会导致键错误）。

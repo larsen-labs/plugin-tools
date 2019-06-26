@@ -25,7 +25,7 @@ def _get_required_info():
     return {'token': token, 'url': url}
 
 def _error(message):
-    if ENV.farmware_api_available():
+    if ENV.plugin_api_available():
         log(message, 'error')
         sys.exit(1)
     else:
@@ -296,5 +296,5 @@ if __name__ == '__main__':
     get_toolslots()
     get_property('device', 'name')
     add_plant(x=100, y=100)
-    add_plant(x=10, y=20, z=30, radius=10, openfarm_slug='mint', name='test')
+    add_plant(x=10, y=20, z=30, radius=10, planting_slug='mint', name='test')
     find_sequence_by_name('test')
