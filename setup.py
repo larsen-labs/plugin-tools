@@ -14,7 +14,7 @@ with open('README.md') as f:
 if __name__ == '__main__':
     setup(name='plugin_tools',
           version=VERSION,
-          description='Larsen convenience functions for use in Larsen OS.',
+          description='Plugin convenience functions for use in Larsen OS.',
           long_description=README,
           long_description_content_type='text/markdown',
           url='https://github.com/larsen-labs/plugin-tools',

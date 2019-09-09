@@ -63,8 +63,8 @@ def _test_200_response():
 
 def run_device_requests_tests():
     'Run command error tests.'
-    os.environ['LARSEN_URL'] = 'fake_plugin_url/'
-    os.environ['LARSEN_TOKEN'] = 'fake_plugin_token'
+    os.environ['PLUGIN_URL'] = 'fake_plugin_url/'
+    os.environ['PLUGIN_TOKEN'] = 'fake_plugin_token'
     _test_500_response()
     _test_200_response()
 

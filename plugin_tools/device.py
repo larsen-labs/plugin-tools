@@ -50,8 +50,8 @@ def rpc_wrapper(command, rpc_id=None):
 def _device_request(method, endpoint, payload=None):
     '向设备插件API发出请求。'
     try:
-        base_url = os.environ['LARSEN_URL']
-        token = os.environ['LARSEN_TOKEN']
+        base_url = os.environ['PLUGIN_URL']
+        token = os.environ['PLUGIN_TOKEN']
     except KeyError:
         return
 
@@ -74,7 +74,7 @@ def _device_request(method, endpoint, payload=None):
     return response
 
 def _device_request_v2(payload):
-    'Make a request to the device Larsen API (v2).'
+    '向设备插件api（v2）发出请求。'
     if not ENV.plugin_api_available():
         return
     _request_write(payload)
@@ -82,7 +82,7 @@ def _device_request_v2(payload):
     return _response_read(rpc_uuid)
 
 def _device_state_fetch_v2():
-    'Get info from the device Larsen API (v2).'
+    '从设备插件api（v2）获取信息。'
     if ENV.bot_state_dir is None:
         return
 
@@ -139,8 +139,7 @@ def _send(function):
         rpc_id = kwargs.pop('rpc_id', None)
         if not isinstance(rpc_id, str):
             return send_celery_script(function(*args, **kwargs))
-        else:
-            return send_celery_script(function(*args, **kwargs), rpc_id=rpc_id)
+        return send_celery_script(function(*args, **kwargs), rpc_id=rpc_id)
     return wrapper
 
 def send_celery_script(command, rpc_id=None):
@@ -455,7 +454,7 @@ def read_status():
     return _assemble(kind, {})
 
 @_send
-def reboot():
+def reboot(package='larsen_os'):
     """发送命令：重新启动。"""
     kind = 'reboot'
     args_ok = _check_arg(kind, package, ALLOWED_PACKAGES)

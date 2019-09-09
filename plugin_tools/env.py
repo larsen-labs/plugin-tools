@@ -5,9 +5,9 @@
 import os
 
 # Larsen API ENV variables
-LARSEN_API_PREFIX = 'LARSEN_API_V2_'
-REQUEST_PIPE = os.getenv(LARSEN_API_PREFIX + 'REQUEST_PIPE')
-RESPONSE_PIPE = os.getenv(LARSEN_API_PREFIX + 'RESPONSE_PIPE')
+PLUGIN_API_PREFIX = 'PLUGIN_API_V2_'
+REQUEST_PIPE = os.getenv(PLUGIN_API_PREFIX + 'REQUEST_PIPE')
+RESPONSE_PIPE = os.getenv(PLUGIN_API_PREFIX + 'RESPONSE_PIPE')
 # Larsen OS 环境变量
 LARSEN_OS_PREFIX = 'LARSEN_OS_'
 IMAGES_DIR = os.getenv(LARSEN_OS_PREFIX + 'IMAGES_DIR')
@@ -57,4 +57,4 @@ class Env(object):
         '确定插件API是否可用。'
         if self.use_v2():
             return self.request_pipe is not None and self.response_pipe is not None
-        return os.getenv('LARSEN_URL') is not None and self.token is not None
+        return os.getenv('PLUGIN_URL') is not None and self.token is not None

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-'''Larsen Tools: Larsen API utilities used by `device` for Larsen OS v8.'''
+'''插件工具：larsen os v8的“device”使用的插件api实用程序。'''
 
 import sys
 import json

@@ -9,7 +9,7 @@ from plugin_tools import get_config_value
 def _test_get_config(plugin, config, type_, expected):
     def _get_state():
         return {'process_info': {'plugins': {
-            'Larsen Name': {'config': [{'name': 'twenty', 'value': 20}]}}}}
+            'Plugin Name': {'config': [{'name': 'twenty', 'value': 20}]}}}}
     if type_ is None:
         received = get_config_value(plugin, config, _get_state=_get_state)
     else:
@@ -24,12 +24,12 @@ def run_tests():
     os.environ['plugin_name_int_input'] = '10'
     os.environ['plugin_name_str_input'] = 'ten'
     _test_get_config('plugin_name', 'int_input', None, 10)
-    _test_get_config('Larsen Name', 'int_input', int, 10)
+    _test_get_config('Plugin Name', 'int_input', int, 10)
     _test_get_config('plugin-name', 'int_input', str, '10')
     _test_get_config('plugin_name', 'str_input', str, 'ten')
-    _test_get_config('Larsen Name', 'twenty', None, 20)  # default value
+    _test_get_config('Plugin Name', 'twenty', None, 20)  # default value
     os.environ['plugin_name_twenty'] = 'twenty'
-    _test_get_config('Larsen Name', 'twenty', str, 'twenty')  # set value
+    _test_get_config('Plugin Name', 'twenty', str, 'twenty')  # set value
 
 if __name__ == '__main__':
     run_tests()

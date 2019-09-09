@@ -29,7 +29,7 @@ def get_config_value(plugin_name, config_name, value_type=int,
     try:  # 检索插件清单数据
         manifest = _get_state()['process_info']['plugins'][plugin_name]
     except KeyError:
-        log('Larsen manifest for `{}` not found.'.format(plugin_name), 'warn')
+        log('Plugin manifest for `{}` not found.'.format(plugin_name), 'warn')
         return value_type(os.environ[namespaced_config])
     else:  # 找到配置数据。
         configs = manifest['config'].values() if Env().use_v2() else manifest['config']
@@ -52,12 +52,12 @@ def get_config_value(plugin_name, config_name, value_type=int,
     return value
 
 def set_config_value(plugin_name, config_name, value):
-    """Set the value of a Larsen config using the Larsen's namespace.
+    """使用插件的命名空间设置插件配置。
 
     Args:
-        plugin_name (str): Name of the Larsen.
-        config_name (str): Larsen input name.
-        value: Value to set.
+        plugin_name (str): 插件的名称。
+        config_name (str): 插件输入名称。
+        value: 要设置的值。
     """
     namespaced_config = '{}_{}'.format(snake_case(plugin_name), config_name)
     set_user_env(namespaced_config, value)
