@@ -3,9 +3,10 @@
 '插件工具导入。'
 
 import os
-from .device import log, get_bot_state
+from .device import log, get_bot_state, set_user_env
 from .app import request
 from .auxiliary import snake_case
+from .env import Env
 
 with open(os.path.join(os.path.dirname(__file__), 'VERSION')) as version_file:
     VERSION = version_file.read().strip()
@@ -28,10 +29,11 @@ def get_config_value(plugin_name, config_name, value_type=int,
     try:  # 检索插件清单数据
         manifest = _get_state()['process_info']['plugins'][plugin_name]
     except KeyError:
-        log('Plugin manifest for `{}` not found.'.format(plugin_name), 'warn')
+        log('Larsen manifest for `{}` not found.'.format(plugin_name), 'warn')
         return value_type(os.environ[namespaced_config])
     else:  # 找到配置数据。
-        configs = manifest['config']
+        configs = manifest['config'].values() if Env().use_v2() else manifest['config']
+
 
     # 步骤2。搜索配置名称。
     try:  # 检索默认配置值
@@ -48,3 +50,14 @@ def get_config_value(plugin_name, config_name, value_type=int,
         log('Using the default value for `{}`.'.format(config_name))
         value = default
     return value
+
+def set_config_value(plugin_name, config_name, value):
+    """Set the value of a Larsen config using the Larsen's namespace.
+
+    Args:
+        plugin_name (str): Name of the Larsen.
+        config_name (str): Larsen input name.
+        value: Value to set.
+    """
+    namespaced_config = '{}_{}'.format(snake_case(plugin_name), config_name)
+    set_user_env(namespaced_config, value)

@@ -10,7 +10,7 @@ def run_tests(TEST, app_login):
     '运行设备测试。'
     COORDINATE = device.assemble_coordinate(1, 0, 1)
     OFFSET = device.assemble_coordinate(0, 0, 0)
-    URL = 'https://coding.net/u/zhangyt0906/p/plugin_manifests/git/raw/' \
+    URL = 'https://raw.githubusercontent.com/larsen-labs/plugin_manifests/' \
         'master/packages/take-photo/manifest.json'
     app.post('sequences', {'name': 'test', 'body': []}, get_info=app_login)
     SEQUENCE = app.find_sequence_by_name(name='test', get_info=app_login)

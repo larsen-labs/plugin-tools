@@ -4,21 +4,31 @@
 
 import os
 
+# Larsen API ENV variables
+LARSEN_API_PREFIX = 'LARSEN_API_V2_'
+REQUEST_PIPE = os.getenv(LARSEN_API_PREFIX + 'REQUEST_PIPE')
+RESPONSE_PIPE = os.getenv(LARSEN_API_PREFIX + 'RESPONSE_PIPE')
 # Larsen OS 环境变量
 LARSEN_OS_PREFIX = 'LARSEN_OS_'
-IMAGES_DIR = os.getenv('IMAGES_DIR')
+IMAGES_DIR = os.getenv(LARSEN_OS_PREFIX + 'IMAGES_DIR')
+LEGACY_IMAGES_DIR = os.getenv('IMAGES_DIR')
 LSOS_VERSION = os.getenv(LARSEN_OS_PREFIX + 'VERSION', '0')
-
+BOT_STATE_DIR = os.getenv(LARSEN_OS_PREFIX + 'STATE_DIR')
 # Larsen API 环境变量
-TOKEN = os.getenv('API_TOKEN')
+LARSEN_API_PREFIX = 'LARSEN_API_'
+TOKEN = os.getenv(LARSEN_API_PREFIX + 'TOKEN')
+LEGACY_TOKEN = os.getenv('API_TOKEN')
 
 class Env(object):
     '插件环境变量。'
 
     def __init__(self):
-        self.images_dir = IMAGES_DIR
+        self.request_pipe = REQUEST_PIPE
+        self.response_pipe = RESPONSE_PIPE
+        self.images_dir = IMAGES_DIR or LEGACY_IMAGES_DIR
         self.lsos_version = LSOS_VERSION
-        self.token = TOKEN
+        self.bot_state_dir = BOT_STATE_DIR
+        self.token = TOKEN or LEGACY_TOKEN
 
     @staticmethod
     def get_version_parts(version_string):
@@ -39,6 +49,12 @@ class Env(object):
                 # 没有其他可比较部分。版本相同。
                 return True
 
+    def use_v2(self):
+        'Determine if the v2 API should be used.'
+        return self.lsos_at_least(8)
+
     def plugin_api_available(self):
         '确定插件API是否可用。'
-        return os.getenv('PLUGIN_URL') is not None and self.token is not None
+        if self.use_v2():
+            return self.request_pipe is not None and self.response_pipe is not None
+        return os.getenv('LARSEN_URL') is not None and self.token is not None

@@ -155,7 +155,7 @@ class Tester(object):
         if 'from_device' in message.topic:
             parsed = json.loads(message.payload.decode())
             kind = parsed['kind']
-            if kind == 'rpc_ok' or kind == 'rpc_error':
+            if kind in ['rpc_ok', 'rpc_error']:
                 rpc_id = parsed['args']['label']
                 if rpc_id != 'ping':
                     self.incoming[rpc_id] = {
@@ -368,6 +368,10 @@ if __name__ == '__main__':
         device_state_tests.run_position_tests()
         _print_header('device.get_pin_value():')
         device_state_tests.run_pin_value_tests()
+
+        import device_requests_tests
+        _print_header('device requests tests:')
+        device_requests_tests.run_device_requests_tests()
 
         _print_header('env.Env().lsos_at_least():')
         import env_tests

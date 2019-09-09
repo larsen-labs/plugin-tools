@@ -75,8 +75,7 @@ def request(raw_method, endpoint, _id=None, payload=None, return_dict=False,
         print(request_string)
         if return_dict:
             return {'json': json.dumps(request_string), 'status_code': 0}
-        else:
-            return request_string
+        return request_string
 
     try:  # 测试时详细输出
         if api['verbose']:
@@ -110,8 +109,7 @@ def request(raw_method, endpoint, _id=None, payload=None, return_dict=False,
         print(text_response)
     if return_dict:
         return {'json': json_response, 'status_code': status_code}
-    else:
-        return json_response
+    return json_response
 
 def post(endpoint, payload, return_dict=False, get_info=_get_required_info):
     """向Funfarm Web应用程序发送Post HTTP请求。
@@ -136,6 +134,7 @@ def get(endpoint, _id=None, return_dict=False, get_info=_get_required_info):
     """
     kwargs = {
         '_id': _id,
+        'payload': payload,
         'return_dict': return_dict,
         'get_info': get_info
         }
@@ -200,6 +199,15 @@ def log(message, message_type='info', get_info=_get_required_info):
     payload = {'message': message, 'type': message_type}
     return post('logs', payload=payload, get_info=get_info)
 
+def search_logs(search_payload, get_info=_get_required_info):
+    """使用搜索词从Web应用程序中获取日志。
+
+    参数:
+        search_payload (dict): 例如, {'x': 5}
+           允许的关键字包括:
+                verbosity, type, message, x, y, z
+    """
+    return get('logs/search', payload=search_payload, get_info=get_info)
 def search_points(search_payload, get_info=_get_required_info):
     """使用关键词从Web应用程序获取过滤后的点。
 

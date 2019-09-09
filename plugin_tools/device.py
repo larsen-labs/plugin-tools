@@ -8,6 +8,7 @@ import sys
 import uuid
 from functools import wraps
 import requests
+from ._util import _request_write, _response_read
 from .auxiliary import Color
 from .env import Env
 
@@ -18,11 +19,11 @@ ALLOWED_MESSAGE_TYPES = [
     'success', 'busy', 'warn', 'error', 'info', 'fun', 'debug']
 ALLOWED_MESSAGE_CHANNELS = ['ticker', 'toast', 'email', 'espeak']
 ALLOWED_PACKAGES = ['larsen_os', 'arduino_firmware', 'plugin']
+RESPONSE_ERROR_LOG_UUID = str(uuid.uuid4())
 
 def _on_error():
     if ENV.plugin_api_available():
         sys.exit(1)
-    return
 
 def _check_celery_script(command):
     try:
@@ -49,8 +50,8 @@ def rpc_wrapper(command, rpc_id=None):
 def _device_request(method, endpoint, payload=None):
     '向设备插件API发出请求。'
     try:
-        base_url = os.environ['PLUGIN_URL']
-        token = os.environ['PLUGIN_TOKEN']
+        base_url = os.environ['LARSEN_URL']
+        token = os.environ['LARSEN_TOKEN']
     except KeyError:
         return
 
@@ -59,14 +60,39 @@ def _device_request(method, endpoint, payload=None):
     request_kwargs['headers'] = {
         'Authorization': 'Bearer ' + token,
         'content-type': 'application/json'}
+    response_error_log = False
     if payload is not None:
         request_kwargs['json'] = payload
+        response_error_log = payload.get(
+            'args', {}).get('label') == RESPONSE_ERROR_LOG_UUID
     response = requests.request(method, url, **request_kwargs)
-    if response.status_code != 200:
+    if response.status_code != 200 and not response_error_log:
         log('{} request `{}` error ({})'.format(
-            endpoint, payload or '', response.status_code), 'error')
+            endpoint, payload or '', response.status_code), 'error',
+            rpc_id=RESPONSE_ERROR_LOG_UUID)
         _on_error()
     return response
+
+def _device_request_v2(payload):
+    'Make a request to the device Larsen API (v2).'
+    if not ENV.plugin_api_available():
+        return
+    _request_write(payload)
+    rpc_uuid = payload.get('args', {}).get('label')
+    return _response_read(rpc_uuid)
+
+def _device_state_fetch_v2():
+    'Get info from the device Larsen API (v2).'
+    if ENV.bot_state_dir is None:
+        return
+
+    def _crawl(path):
+        if os.path.isdir(path):
+            return {n: _crawl(os.path.join(path, n)) for n in os.listdir(path)}
+        with open(path, 'r') as value_file:
+            value = value_file.read()
+            return value if value != '' else None
+    return _crawl(ENV.bot_state_dir)
 
 def _post(endpoint, payload):
     """将有效负载发布到设备插件API。
@@ -79,6 +105,8 @@ def _post(endpoint, payload):
     返回：
         请求响应对象
     """
+    if ENV.use_v2():
+        return _device_request_v2(payload)
     return _device_request('POST', endpoint, payload)
 
 def _get(endpoint):
@@ -91,6 +119,8 @@ def _get(endpoint):
     返回：
         请求响应对象
     """
+    if ENV.use_v2():
+        return _device_state_fetch_v2()
     return _device_request('GET', endpoint)
 
 def get_bot_state():
@@ -100,8 +130,7 @@ def get_bot_state():
         _error('Device info could not be retrieved.')
         _on_error()
         return {}
-    else:
-        return bot_state.json()
+    return bot_state if ENV.use_v2() else bot_state.json()
 
 def _send(function):
     @wraps(function)
@@ -129,6 +158,7 @@ def send_celery_script(command, rpc_id=None):
     return {
         'command': command,
         'sent': rpc,
+        'response': response if ENV.use_v2() else {}
         }
 
 def log(message, message_type='info', channels=None, rpc_id=None):
@@ -145,8 +175,7 @@ def _assemble(kind, args, body=None):
     '装配celery脚本指令'
     if body is None:
         return {'kind': kind, 'args': args}
-    else:
-        return {'kind': kind, 'args': args, 'body': body}
+    return {'kind': kind, 'args': args, 'body': body}
 
 def _error(error_text):
     if ENV.plugin_api_available():
@@ -221,11 +250,10 @@ def send_message(message, message_type, channels=None):
         if channels is None:
             return _assemble(
                 kind, {'message': message, 'message_type': message_type})
-        else:
-            return _assemble(
-                kind,
-                args={'message': message, 'message_type': message_type},
-                body=[_assemble_channel(channel) for channel in channels])
+        return _assemble(
+            kind,
+            args={'message': message, 'message_type': message_type},
+            body=[_assemble_channel(channel) for channel in channels])
 
 @_send
 def calibrate(axis):
@@ -287,16 +315,15 @@ def execute_script(label, inputs=None):
     args = {'label': label}
     if inputs is None:
         return _assemble(kind, args)
-    else:
-        plugin = label.replace(' ', '_').replace('-', '_').lower()
-        body = []
-        for key, value in inputs.items():
-            if key.startswith(plugin):
-                input_name = key
-            else:
-                input_name = '{}_{}'.format(plugin, key)
-            body.append(assemble_pair(input_name, value))
-        return _assemble(kind, args, body)
+    plugin = label.replace(' ', '_').replace('-', '_').lower()
+    body = []
+    for key, value in inputs.items():
+        if key.startswith(plugin):
+            input_name = key
+        else:
+            input_name = '{}_{}'.format(plugin, key)
+        body.append(assemble_pair(input_name, str(value)))
+    return _assemble(kind, args, body)
 
 def _set_docstring_for_execute_script_alias(func):
     func.__doc__ = execute_script.__doc__
@@ -501,7 +528,7 @@ def set_user_env(key, value):
         value (str): 值
     """
     kind = 'set_user_env'
-    body = [assemble_pair(key, value)]
+    body = [assemble_pair(key, str(value))]
     return _assemble(kind, {}, body)
 
 @_send
@@ -639,7 +666,7 @@ if __name__ == '__main__':
     # factory_reset('larsen_os')
     find_home('x')
     home('all')
-    URL = 'https://coding.net/u/zhangyt0906/p/plugin_manifests/git/raw/' \
+    URL = 'https://raw.githubusercontent.com/larsen-labs/plugin_manifests/' \
         'master/packages/take-photo/manifest.json'
     install_plugin(URL)
     install_first_party_plugin()

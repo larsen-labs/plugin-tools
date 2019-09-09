@@ -14,10 +14,10 @@ with open('README.md') as f:
 if __name__ == '__main__':
     setup(name='plugin_tools',
           version=VERSION,
-          description='Plugin convenience functions for use in Larsen OS.',
+          description='Larsen convenience functions for use in Larsen OS.',
           long_description=README,
           long_description_content_type='text/markdown',
-          url='https://gitee.com/zhangyt0906/plugin-tools',
+          url='https://github.com/larsen-labs/plugin-tools',
           project_urls={
               'Larsen': 'https://funfarm.fun/'
           },
